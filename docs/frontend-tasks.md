@@ -17,3 +17,7 @@ The frontend may provide UI Feedback using primevue components like alerts
 # Task-4: Testing
 
 Implement unit testing over login and sign up features
+
+# Task-5: Logout
+
+Users must be able to logout from the dashboard when logout button is clicked.

@@ -44,3 +44,9 @@ Create requireAdmin middleware for role-based access control.
 Apply requireAdmin middleware to DELETE /api/files/:id endpoint so only admins can delete files.
 
 **Status:** Completed ✓
+
+# Task-7: Error Messages ✓
+
+Create error-messages.ts file with all error messages centralized and update backend files to use these constants instead of literal strings.
+
+**Status:** Completed ✓

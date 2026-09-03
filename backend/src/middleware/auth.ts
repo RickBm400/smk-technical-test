@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { AppError } from './errorHandler.js'
+import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
 
 export interface AuthRequest extends Request {
   userId?: string
@@ -15,7 +16,7 @@ export const authMiddleware = (
   const authHeader = req.headers.authorization
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return next(new AppError(401, 'No token provided'))
+    return next(new AppError(401, ERROR_MESSAGES.AUTH.NO_TOKEN_PROVIDED))
   }
 
   const token = authHeader.split(' ')[1]
@@ -29,6 +30,6 @@ export const authMiddleware = (
     req.userRole = decoded.role
     next()
   } catch {
-    return next(new AppError(401, 'Invalid token'))
+    return next(new AppError(401, ERROR_MESSAGES.AUTH.INVALID_TOKEN))
   }
 }

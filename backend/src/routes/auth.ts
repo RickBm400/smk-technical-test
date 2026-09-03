@@ -7,6 +7,7 @@ import { prisma } from '../config/prisma.js'
 import { registerSchema, loginSchema } from '../types/schemas.js'
 import { AppError } from '../middleware/errorHandler.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
+import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
 
 export const authRouter: ExpressRouter = Router()
 
@@ -19,7 +20,7 @@ authRouter.post('/register', async (req: Request, res: Response, next: NextFunct
     })
 
     if (existingUser) {
-      throw new AppError(400, 'Email already registered')
+      throw new AppError(400, ERROR_MESSAGES.AUTH.EMAIL_ALREADY_REGISTERED)
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10)
@@ -56,13 +57,13 @@ authRouter.post('/login', async (req: Request, res: Response, next: NextFunction
     })
 
     if (!user) {
-      throw new AppError(401, 'Invalid credentials')
+      throw new AppError(401, ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS)
     }
 
     const isValidPassword = await bcrypt.compare(data.password, user.password)
 
     if (!isValidPassword) {
-      throw new AppError(401, 'Invalid credentials')
+      throw new AppError(401, ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS)
     }
 
     const token = jwt.sign(

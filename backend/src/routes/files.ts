@@ -4,10 +4,11 @@ import type { Router as ExpressRouter } from 'express'
 import { parse } from 'csv-parse/sync'
 import { prisma } from '../config/prisma.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
-import { AppError } from '../middleware/errorHandler.js'
+import { AppError, ValidationError } from '../middleware/errorHandler.js'
 import { uploadMiddleware } from '../config/multer.js'
 import { csvRowSchema, type CsvValidationError } from '../types/schemas.js'
 import { requireAdmin } from '../middleware/role.js'
+import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
 
 export const filesRouter: ExpressRouter = Router()
 
@@ -47,7 +48,7 @@ filesRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFuncti
     })
 
     if (!file) {
-      throw new AppError(404, 'File not found')
+      throw new AppError(404, ERROR_MESSAGES.FILE.FILE_NOT_FOUND)
     }
 
     res.json(file)
@@ -59,7 +60,7 @@ filesRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFuncti
 filesRouter.post('/upload', uploadMiddleware.single('file'), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.file) {
-      throw new AppError(400, 'No file uploaded')
+      throw new AppError(400, ERROR_MESSAGES.FILE.NO_FILE_UPLOADED)
     }
 
     const csvContent = req.file.buffer.toString('utf-8')
@@ -72,11 +73,11 @@ filesRouter.post('/upload', uploadMiddleware.single('file'), async (req: AuthReq
         trim: true
       })
     } catch {
-      throw new AppError(400, 'Invalid CSV format')
+      throw new AppError(400, ERROR_MESSAGES.FILE.INVALID_CSV_FORMAT)
     }
 
     if (records.length === 0) {
-      throw new AppError(400, 'CSV file is empty')
+      throw new AppError(400, ERROR_MESSAGES.FILE.CSV_FILE_EMPTY)
     }
 
     const errors: CsvValidationError[] = []
@@ -107,10 +108,7 @@ filesRouter.post('/upload', uploadMiddleware.single('file'), async (req: AuthReq
     })
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        success: false,
-        errors
-      })
+      throw new ValidationError(errors)
     }
 
     const file = await prisma.file.create({
@@ -161,12 +159,12 @@ filesRouter.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response,
     })
 
     if (!file) {
-      throw new AppError(404, 'File not found')
+      throw new AppError(404, ERROR_MESSAGES.FILE.FILE_NOT_FOUND)
     }
 
     await prisma.file.delete({ where: { id: req.params.id } })
 
-    res.json({ message: 'File deleted' })
+    res.json({ message: ERROR_MESSAGES.FILE.FILE_DELETED })
   } catch (error) {
     next(error)
   }

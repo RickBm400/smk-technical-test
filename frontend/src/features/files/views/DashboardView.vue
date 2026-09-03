@@ -1,5 +1,6 @@
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import { useAuthStore } from '@/features/auth/stores/auth'
 
@@ -9,6 +10,7 @@ export default defineComponent({
     Button
   },
   setup() {
+    const router = useRouter()
     const authStore = useAuthStore()
 
     onMounted(async () => {
@@ -17,6 +19,7 @@ export default defineComponent({
 
     const handleLogout = () => {
       authStore.logout()
+      router.push('/login')
     }
 
     return {

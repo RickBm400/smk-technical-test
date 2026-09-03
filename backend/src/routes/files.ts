@@ -16,11 +16,15 @@ filesRouter.use(authMiddleware)
 filesRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const files = await prisma.file.findMany({
-      where: { userId: req.userId },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
           select: { documents: true }
+        },
+        user: {
+          select: {
+            email: true
+          }
         }
       }
     })

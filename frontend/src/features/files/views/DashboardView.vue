@@ -220,7 +220,11 @@ export default defineComponent({
               {{ formatSize(data.size) }}
             </template>
           </Column>
-          <Column field="uploadedBy" header="Uploaded By" sortable />
+          <Column field="uploadedBy" header="Uploaded By" sortable >
+            <template #body="{ data }">
+              {{ data?.user?.email || 'N/A' }}
+            </template>
+          </Column>
           <Column header="Documents">
             <template #body="{ data }">
               {{ data._count?.documents || 0 }}

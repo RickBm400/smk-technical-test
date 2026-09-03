@@ -31,8 +31,22 @@ model File {
   size      Int
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents Document[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("files")
+}
+
+model Document {
+  id        String  @id @default(uuid())
+  fileId    String
+  file      File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  correo    String
+  nombre    String
+  telefono  String
+  ciudad    String
+  notas     String?
+
+  @@map("documents")
 }

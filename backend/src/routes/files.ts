@@ -1,8 +1,13 @@
 import { Router, Response, NextFunction } from 'express'
+import type { Request } from 'express'
 import type { Router as ExpressRouter } from 'express'
+import { parse } from 'csv-parse/sync'
 import { prisma } from '../config/prisma.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
 import { AppError } from '../middleware/errorHandler.js'
+import { uploadMiddleware } from '../config/multer.js'
+import { csvRowSchema, type CsvValidationError } from '../types/schemas.js'
+import { requireAdmin } from '../middleware/role.js'
 
 export const filesRouter: ExpressRouter = Router()
 
@@ -12,7 +17,12 @@ filesRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction)
   try {
     const files = await prisma.file.findMany({
       where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { documents: true }
+        }
+      }
     })
     res.json(files)
   } catch (error) {
@@ -26,6 +36,9 @@ filesRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFuncti
       where: {
         id: req.params.id,
         userId: req.userId
+      },
+      include: {
+        documents: true
       }
     })
 
@@ -39,35 +52,107 @@ filesRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFuncti
   }
 })
 
-filesRouter.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
+filesRouter.post('/upload', uploadMiddleware.single('file'), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { name, path, size } = req.body
+    if (!req.file) {
+      throw new AppError(400, 'No file uploaded')
+    }
 
-    if (!name || !path || size === undefined) {
-      throw new AppError(400, 'Name, path and size are required')
+    const csvContent = req.file.buffer.toString('utf-8')
+
+    let records: Record<string, string>[]
+    try {
+      records = parse(csvContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true
+      })
+    } catch {
+      throw new AppError(400, 'Invalid CSV format')
+    }
+
+    if (records.length === 0) {
+      throw new AppError(400, 'CSV file is empty')
+    }
+
+    const errors: CsvValidationError[] = []
+    const validRows: Array<{ correo: string; nombre: string; telefono: string; ciudad: string; notas: string | null }> = []
+
+    records.forEach((row, index) => {
+      const rowNumber = index + 2
+
+      const result = csvRowSchema.safeParse(row)
+
+      if (!result.success) {
+        result.error.errors.forEach((err) => {
+          errors.push({
+            row: rowNumber,
+            field: err.path.join('.'),
+            message: err.message
+          })
+        })
+      } else {
+        validRows.push({
+          correo: result.data.correo,
+          nombre: result.data.nombre,
+          telefono: result.data.telefono,
+          ciudad: result.data.ciudad,
+          notas: result.data.notas ?? null
+        })
+      }
+    })
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        errors
+      })
     }
 
     const file = await prisma.file.create({
       data: {
-        name,
-        path,
-        size,
+        name: req.file.originalname,
+        path: `uploads/${req.file.originalname}`,
+        size: req.file.size,
         userId: req.userId!
+      },
+      include: {
+        user: {
+          select: {
+            email: true
+          }
+        }
       }
     })
 
-    res.status(201).json(file)
+    await prisma.document.createMany({
+      data: validRows.map((row) => ({
+        ...row,
+        fileId: file.id
+      }))
+    })
+
+    res.status(201).json({
+      success: true,
+      file: {
+        id: file.id,
+        name: file.name,
+        size: file.size,
+        uploadedBy: file.user.email,
+        createdAt: file.createdAt
+      },
+      documentsCreated: validRows.length
+    })
   } catch (error) {
     next(error)
   }
 })
 
-filesRouter.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
+filesRouter.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const file = await prisma.file.findFirst({
       where: {
-        id: req.params.id,
-        userId: req.userId
+        id: req.params.id
       }
     })
 

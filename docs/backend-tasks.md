@@ -1,90 +1,65 @@
 # Backend Tasks List
 
-Lista de tareas correspondientes al proyecto backend.
+# Task-1: CSV Row Validation Schema ✓
 
-## Funcionalidades
-
-### Task-1: CSV Row Validation Schema ✓
-
-Implementar esquema Zod para validación de filas CSV con los siguientes campos:
-
-- `correo`: String (formato email, obligatorio)
-- `nombre`: String (obligatorio)
-- `telefono`: String (solo numérico, obligatorio)
-- `ciudad`: String (obligatorio)
-- `notas`: String (opcional)
+Implement Zod schema for CSV row validation with the following fields:
+- correo: String (email format, required)
+- nombre: String (required)
+- telefono: String (numeric only, required)
+- ciudad: String (required)
+- notas: String (optional)
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/csv-validation.md)
+# Task-2: Document Model ✓
 
-### Task-2: Document Model ✓
-
-Crear modelo `Document` en el esquema de Prisma para almacenar los datos de las filas del CSV vinculados al modelo `File`.
+Create Document model in Prisma schema to store CSV row data linked to File model.
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/document-model.md)
+# Task-3: Multer Configuration ✓
 
-### Task-3: Multer Configuration ✓
-
-Configurar Multer para la subida de archivos con un límite de tamaño de 10MB.
+Configure Multer for file uploads with 10MB size limit.
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/multer-config.md)
+# Task-4: CSV Upload Endpoint ✓
 
-### Task-4: CSV Upload Endpoint ✓
-
-Implementar endpoint `POST /api/files/upload` con los siguientes requisitos:
-
-- Aceptar archivo CSV mediante `multipart/form-data`
-- Parsear el CSV y validar todas las filas simultáneamente
-- Retornar todos los errores con detalles de fila y campo
-- Crear registros de `File` y `Document` en caso de éxito
+Implement POST /api/files/upload endpoint that:
+- Accepts CSV file via multipart/form-data
+- Parses CSV and validates all rows at once
+- Returns all errors with row/field details
+- Creates File and Document records on success
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/csv-upload-endpoint.md)
+# Task-5: RBAC Middleware ✓
 
-### Task-8: Paginated dashboard ✓
-
-Para el endpoint `/files`, implementar un mecanismo de paginación con el fin de reducir la carga de respuesta. Agregar la funcionalidad de búsqueda de registros por nombre de archivo o ID de usuario.
+Create requireAdmin middleware for role-based access control.
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/pagination.md)
+# Task-6: RBAC on Delete Endpoint ✓
 
-### Task-9: Download file and Soft Delete ✓
-
-Implementar endpoint de descarga de archivo. A partir de la colección de documentos, crear un endpoint que, dado un ID de archivo, reconstruya el CSV a través del archivo JSON y lo envíe a la capa del frontend.
+Apply requireAdmin middleware to DELETE /api/files/:id endpoint so only admins can delete files.
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/file-download.md)
+# Task-7: Error Messages ✓
 
-### Task-7: Error Messages ✓
-
-Crear archivo `error-messages.ts` con todos los mensajes de error centralizados y actualizar los archivos del backend para usar estas constantes en lugar de cadenas literales.
+Create error-messages.ts file with all error messages centralized and update backend files to use these constants instead of literal strings.
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-features/error-messages.md)
+# Task-8: Paginated dashboard ✓
 
-## Control de acceso (RBAC)
-
-### Task-5: RBAC Middleware ✓
-
-Crear middleware `requireAdmin` para el control de acceso basado en roles.
+for /files endpoint, implement a paginated mechanism in order to reduce response load, add the functionality of search regist by file name or user id
 
 **Status:** Completed ✓
 
-**Detalles:** [Ver documentación](./tasks/backend-rbac/rbac-middleware.md)
 
-### Task-6: RBAC on Delete Endpoint ✓
+# Task-9: Download file and Soft Delete ✓
 
-Aplicar middleware `requireAdmin` al endpoint `DELETE /api/files/:id` para que solo los administradores puedan eliminar archivos.
+Implement a download file endpoint; from the documents collection, create an endpoint which, given a file id, rebuild the csv through json file and send it to the frontend layer
 
-**Status:** Completed ✓
-
-**Detalles:** [Ver documentación](./tasks/backend-rbac/rbac-delete.md)
+**Status:** Completed ✓ No not realmente raro y académ Option P violation y dice especific it seems that finally he's been used to the kittens and new reality like writing code of software development is poisoning your mind and your artistic ability developer for ten years to tell me that AI is faster producing code, but you don't think about is that people actually like writing code. You're utilitarian view of software development is poisoning your mind and your artistic ability. I've been a software developer, professional software developer

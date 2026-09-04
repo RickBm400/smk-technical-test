@@ -1,9 +1,9 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
 
-# Install wget for healthcheck, git for some packages
-RUN apk add --no-cache wget git
+# Install OpenSSL (required by Prisma), wget for healthcheck, git for packages
+RUN apt-get update -y && apt-get install -y openssl wget git && rm -rf /var/lib/apt/lists/*
 
 # Enable corepack and pin pnpm to the version used to generate the lockfile
 RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
@@ -12,8 +12,7 @@ COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 COPY tsconfig.json ./
 
-# Use --shamefully-hoist to make node_modules compatible with Alpine's Node.js
-RUN pnpm install --frozen-lockfile --shamefully-hoist
+RUN pnpm install --frozen-lockfile
 
 RUN pnpm prisma generate
 
@@ -21,15 +20,14 @@ COPY src ./src
 RUN pnpm build
 
 # Stage 2: Production
-FROM node:20-alpine AS production
+FROM node:20-slim AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install wget for healthcheck
-RUN apk add --no-cache wget
+# Install OpenSSL (required by Prisma engines) and wget for healthcheck
+RUN apt-get update -y && apt-get install -y openssl wget && rm -rf /var/lib/apt/lists/*
 
-# Enable corepack for prisma migration command
 RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 
 COPY --from=builder /app/node_modules ./node_modules

@@ -3,7 +3,7 @@ import { prisma } from '../config/prisma.js'
 import { csvRowSchema, type CsvValidationError } from '../types/schemas.js'
 import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
 import { BadRequestError, NotFoundError, ValidationError } from '../common/errors/index.js'
-import { buildCsv } from '../utils/csvBuilder.js'
+import { buildCsv, type DocumentCsvData } from '../utils/csvBuilder.js'
 
 export interface FileListResult {
   data: Array<{
@@ -194,7 +194,7 @@ export class FilesService {
       telefono: doc.telefono,
       ciudad: doc.ciudad,
       notas: doc.notas
-    })))
+    })) as DocumentCsvData[])
 
     return { filename: file.name, content: csvContent }
   }

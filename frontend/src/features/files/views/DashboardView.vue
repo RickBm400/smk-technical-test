@@ -9,6 +9,8 @@ import InputText from 'primevue/inputtext'
 import Paginator from 'primevue/paginator'
 import { useAuthStore } from '@/features/auth/stores/auth'
 import { useFilesStore } from '@/features/files/stores/files'
+import { formatDate, formatSize } from '@/shared/utils/format'
+import { FILE_CONSTANTS } from '@/shared/constants'
 
 export default defineComponent({
   name: 'DashboardView',
@@ -80,12 +82,12 @@ export default defineComponent({
     },
     async handleFile(file: File) {
       if (!file.name.endsWith('.csv')) {
-        this.filesStore.uploadError = [{ row: 0, field: 'file', message: 'Solo se permiten archivos CSV' }]
+        this.filesStore.setUploadError([{ row: 0, field: 'file', message: 'Solo se permiten archivos CSV' }])
         return
       }
 
-      if (file.size > 10 * 1024 * 1024) {
-        this.filesStore.uploadError = [{ row: 0, field: 'file', message: 'El archivo debe ser menor a 10MB' }]
+      if (file.size > FILE_CONSTANTS.MAX_FILE_SIZE) {
+        this.filesStore.setUploadError([{ row: 0, field: 'file', message: 'El archivo debe ser menor a 10MB' }])
         return
       }
 
@@ -99,23 +101,11 @@ export default defineComponent({
     async handleDelete(fileId: string) {
       const result = await this.filesStore.deleteFile(fileId)
       if (!result.success && result.message) {
-        this.filesStore.uploadError = [{ row: 0, field: 'file', message: result.message }]
+        this.filesStore.setUploadError([{ row: 0, field: 'file', message: result.message }])
       }
     },
-    formatDate(dateString: string): string {
-      return new Date(dateString).toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    },
-    formatSize(bytes: number): string {
-      if (bytes < 1024) return bytes + ' B'
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-    },
+    formatDate,
+    formatSize,
     clearErrors() {
       this.filesStore.clearUploadState()
     },

@@ -20,9 +20,16 @@ export const csvRowSchema = z.object({
   notas: z.string().optional()
 })
 
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
+  search: z.string().optional().default('')
+})
+
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type CsvRow = z.infer<typeof csvRowSchema>
+export type PaginationQuery = z.infer<typeof paginationQuerySchema>
 
 export interface CsvValidationError {
   row: number

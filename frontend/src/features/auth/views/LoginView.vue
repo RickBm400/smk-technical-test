@@ -5,6 +5,7 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useAuthStore } from '@/features/auth/stores/auth'
+import { isValidEmail } from '@/shared/utils/validation'
 
 export default defineComponent({
   name: 'LoginView',
@@ -27,8 +28,7 @@ export default defineComponent({
       return useAuthStore()
     },
     isEmailValid(): boolean {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      return emailRegex.test(this.email)
+      return isValidEmail(this.email)
     }
   },
   methods: {

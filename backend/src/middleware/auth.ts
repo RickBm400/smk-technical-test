@@ -4,11 +4,12 @@ import { UnauthorizedError } from '../common/errors/index.js'
 import { env } from '../config/env.js'
 import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
 import type { JwtPayload } from '../types/jwt.js'
+import type { Role } from '../types/role.js'
 import type { Request } from 'express'
 
 export interface AuthRequest extends Request {
   userId?: string
-  userRole?: string
+  userRole?: Role
 }
 
 export const authMiddleware = (
@@ -27,7 +28,7 @@ export const authMiddleware = (
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload
     req.userId = decoded.userId
-    req.userRole = decoded.role
+    req.userRole = decoded.role as Role
     next()
   } catch {
     return next(new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_TOKEN))

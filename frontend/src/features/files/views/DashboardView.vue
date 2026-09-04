@@ -189,9 +189,21 @@ export default defineComponent({
         </div>
 
         <div v-if="filesStore.uploadError" class="mt-4">
-          <Message severity="error" @close="clearErrors">
-            <strong>Carga Fallida:</strong>
-          </Message>
+          <div class="flex items-center justify-between mb-2">
+            <Message severity="error" class="flex-1 mr-2 mb-0">
+              <strong>Carga Fallida:</strong>
+              <span class="ml-2">({{ filesStore.uploadError.length }} {{ filesStore.uploadError.length === 1 ? 'error' : 'errores' }})</span>
+            </Message>
+            <Button
+              label="Limpiar errores"
+              icon="pi pi-trash"
+              severity="secondary"
+              size="small"
+              outlined
+              @click="clearErrors"
+              aria-label="Limpiar todos los errores"
+            />
+          </div>
           <div class="mt-2 bg-red-50 border border-red-200 rounded p-4 max-h-60 overflow-auto">
             <table class="w-full text-sm">
               <thead>

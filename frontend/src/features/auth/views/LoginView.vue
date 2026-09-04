@@ -31,6 +31,14 @@ export default defineComponent({
       return isValidEmail(this.email)
     }
   },
+  watch: {
+    email() {
+      if (this.errorMessage) this.errorMessage = ''
+    },
+    password() {
+      if (this.errorMessage) this.errorMessage = ''
+    }
+  },
   methods: {
     handleLogin() {
       this.errorMessage = ''
@@ -61,8 +69,10 @@ export default defineComponent({
             this.$router.push({ name: 'dashboard' })
           }, 500)
         } else {
-          this.errorMessage = result.message || 'Inicio de sesión fallido'
+          this.errorMessage = result.message || 'Credenciales inválidas. Verifique su email y contraseña.'
         }
+      }).catch(() => {
+        this.errorMessage = 'Error de conexión. Intente nuevamente.'
       })
     }
   }
@@ -74,7 +84,7 @@ export default defineComponent({
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
       <h1 class="text-2xl font-bold mb-6 text-center">CSV Manager - Iniciar Sesión</h1>
 
-      <Message v-if="errorMessage" severity="error" class="mb-4">
+      <Message v-if="errorMessage" severity="error" class="mb-4" :closable="true" @close="errorMessage = ''">
         {{ errorMessage }}
       </Message>
 
@@ -104,6 +114,7 @@ export default defineComponent({
             placeholder="Ingrese su contraseña"
             inputClass="w-full"
             class="w-full"
+            :inputProps="{ autocomplete: 'current-password' }"
           />
         </div>
 

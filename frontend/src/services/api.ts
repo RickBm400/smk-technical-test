@@ -25,8 +25,13 @@ api.interceptors.response.use(
       'response' in error &&
       (error as { response?: { status?: number } }).response?.status === 401
     ) {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN)
-      window.location.href = '/login'
+      const hasToken = !!localStorage.getItem(STORAGE_KEYS.TOKEN)
+      if (hasToken) {
+        localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      }
     }
     return Promise.reject(error)
   }

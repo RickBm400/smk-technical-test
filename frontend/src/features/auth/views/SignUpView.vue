@@ -1,6 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent } from 'vue'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
@@ -17,87 +16,78 @@ export default defineComponent({
     Select,
     Message
   },
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-
-    const email = ref('')
-    const password = ref('')
-    const confirmPassword = ref('')
-    const role = ref<'ADMIN' | 'MEMBER'>('MEMBER')
-    const errorMessage = ref('')
-    const successMessage = ref('')
-
-    const roles = [
-      { label: 'Miembro', value: 'MEMBER' },
-      { label: 'Administrador', value: 'ADMIN' }
-    ]
-
-    const validateEmail = (value: string): boolean => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      return emailRegex.test(value)
-    }
-
-    const handleSignUp = async () => {
-      errorMessage.value = ''
-      successMessage.value = ''
-
-      if (!email.value) {
-        errorMessage.value = 'El email es requerido'
-        return
-      }
-
-      if (!validateEmail(email.value)) {
-        errorMessage.value = 'Formato de email inválido'
-        return
-      }
-
-      if (!password.value) {
-        errorMessage.value = 'La contraseña es requerida'
-        return
-      }
-
-      if (password.value.length < 6) {
-        errorMessage.value = 'La contraseña debe tener al menos 6 caracteres'
-        return
-      }
-
-      if (!confirmPassword.value) {
-        errorMessage.value = 'Por favor confirme su contraseña'
-        return
-      }
-
-      if (password.value !== confirmPassword.value) {
-        errorMessage.value = 'Las contraseñas no coinciden'
-        return
-      }
-
-      const result = await authStore.register({
-        email: email.value,
-        password: password.value,
-        role: role.value
-      })
-
-      if (result.success) {
-        successMessage.value = '¡Registro exitoso! Redirigiendo al inicio de sesión...'
-        setTimeout(() => {
-          router.push('/login')
-        }, 1500)
-      } else {
-        errorMessage.value = result.message || 'Registro fallido'
-      }
-    }
-
+  data() {
     return {
-      email,
-      password,
-      confirmPassword,
-      role,
-      errorMessage,
-      successMessage,
-      roles,
-      handleSignUp,
-      authStore
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'MEMBER' as 'ADMIN' | 'MEMBER',
+      errorMessage: '',
+      successMessage: '',
+      roles: [
+        { label: 'Miembro', value: 'MEMBER' },
+        { label: 'Administrador', value: 'ADMIN' }
+      ]
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    isEmailValid(): boolean {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emailRegex.test(this.email)
+    }
+  },
+  methods: {
+    handleSignUp() {
+      this.errorMessage = ''
+      this.successMessage = ''
+
+      if (!this.email) {
+        this.errorMessage = 'El email es requerido'
+        return
+      }
+
+      if (!this.isEmailValid) {
+        this.errorMessage = 'Formato de email inválido'
+        return
+      }
+
+      if (!this.password) {
+        this.errorMessage = 'La contraseña es requerida'
+        return
+      }
+
+      if (this.password.length < 6) {
+        this.errorMessage = 'La contraseña debe tener al menos 6 caracteres'
+        return
+      }
+
+      if (!this.confirmPassword) {
+        this.errorMessage = 'Por favor confirme su contraseña'
+        return
+      }
+
+      if (this.password !== this.confirmPassword) {
+        this.errorMessage = 'Las contraseñas no coinciden'
+        return
+      }
+
+      this.authStore.register({
+        email: this.email,
+        password: this.password,
+        role: this.role
+      }).then((result) => {
+        if (result.success) {
+          this.successMessage = '¡Registro exitoso! Redirigiendo al inicio de sesión...'
+          setTimeout(() => {
+            this.$router.push({ name: 'login' })
+          }, 1500)
+        } else {
+          this.errorMessage = result.message || 'Registro fallido'
+        }
+      })
     }
   }
 })

@@ -1,15 +1,12 @@
 import { Router, Response, NextFunction } from 'express'
 import type { Request } from 'express'
 import type { Router as ExpressRouter } from 'express'
-import { parse } from 'csv-parse/sync'
 import { prisma } from '../config/prisma.js'
 import { authMiddleware, AuthRequest } from '../middleware/auth.js'
-import { AppError, ValidationError } from '../middleware/errorHandler.js'
+import { AppError } from '../middleware/errorHandler.js'
 import { uploadMiddleware } from '../config/multer.js'
-import { csvRowSchema, type CsvValidationError } from '../types/schemas.js'
 import { requireAdmin } from '../middleware/role.js'
-import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
-import { buildCsv } from '../utils/csvBuilder.js'
+import { FilesService } from '../services/files.service.js'
 
 export const filesRouter: ExpressRouter = Router()
 
@@ -20,55 +17,13 @@ filesRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction)
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 10
     const search = (req.query.search as string) || ''
-    const skip = (page - 1) * limit
 
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { user: { email: { contains: search, mode: 'insensitive' as const } } }
-          ]
-        }
-      : {}
+    if (!req.userId) {
+      throw new AppError(401, 'No user')
+    }
 
-    const [files, total] = await Promise.all([
-      prisma.file.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: {
-            select: { documents: true }
-          },
-          user: {
-            select: {
-              email: true
-            }
-          }
-        }
-      }),
-      prisma.file.count({ where })
-    ])
-
-    const totalPages = Math.ceil(total / limit)
-
-    res.json({
-      data: files.map(file => ({
-        id: file.id,
-        name: file.name,
-        size: file.size,
-        uploadedBy: file.user.email,
-        createdAt: file.createdAt,
-        documentCount: file._count.documents
-      })),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages
-      }
-    })
+    const result = await FilesService.listFiles(req.userId, page, limit, search)
+    res.json(result)
   } catch (error) {
     next(error)
   }
@@ -76,56 +31,11 @@ filesRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction)
 
 filesRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const file = await prisma.file.findFirst({
-      where: {
-        id: req.params.id,
-        userId: req.userId
-      },
-      include: {
-        documents: true
-      }
-    })
-
-    if (!file) {
-      throw new AppError(404, ERROR_MESSAGES.FILE.FILE_NOT_FOUND)
+    if (!req.userId) {
+      throw new AppError(401, 'No user')
     }
-
+    const file = await FilesService.getFileById(req.params.id, req.userId)
     res.json(file)
-  } catch (error) {
-    next(error)
-  }
-})
-
-filesRouter.get('/:id/download', async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const file = await prisma.file.findFirst({
-      where: {
-        id: req.params.id,
-      },
-      include: {
-        documents: true
-      }
-    })
-
-    if (!file) {
-      throw new AppError(404, ERROR_MESSAGES.FILE.FILE_NOT_FOUND)
-    }
-
-    if (file.documents.length === 0) {
-      throw new AppError(404, ERROR_MESSAGES.FILE.NO_DOCUMENTS_FOUND)
-    }
-
-    const csvContent = buildCsv(file.documents.map(doc => ({
-      correo: doc.correo,
-      nombre: doc.nombre,
-      telefono: doc.telefono,
-      ciudad: doc.ciudad,
-      notas: doc.notas
-    })))
-
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
-    res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`)
-    res.send(csvContent)
   } catch (error) {
     next(error)
   }
@@ -134,111 +44,48 @@ filesRouter.get('/:id/download', async (req: AuthRequest, res: Response, next: N
 filesRouter.post('/upload', uploadMiddleware.single('file'), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.file) {
-      throw new AppError(400, ERROR_MESSAGES.FILE.NO_FILE_UPLOADED)
+      throw new AppError(400, 'No se ha subido ningún archivo')
     }
 
-    const csvContent = req.file.buffer.toString('utf-8')
-
-    let records: Record<string, string>[]
-    try {
-      records = parse(csvContent, {
-        columns: true,
-        skip_empty_lines: true,
-        trim: true
-      })
-    } catch {
-      throw new AppError(400, ERROR_MESSAGES.FILE.INVALID_CSV_FORMAT)
+    if (!req.userId) {
+      throw new AppError(401, 'No user')
     }
 
-    if (records.length === 0) {
-      throw new AppError(400, ERROR_MESSAGES.FILE.CSV_FILE_EMPTY)
-    }
-
-    const errors: CsvValidationError[] = []
-    const validRows: Array<{ correo: string; nombre: string; telefono: string; ciudad: string; notas: string | null }> = []
-
-    records.forEach((row, index) => {
-      const rowNumber = index + 2
-
-      const result = csvRowSchema.safeParse(row)
-
-      if (!result.success) {
-        result.error.errors.forEach((err) => {
-          errors.push({
-            row: rowNumber,
-            field: err.path.join('.'),
-            message: err.message
-          })
-        })
-      } else {
-        validRows.push({
-          correo: result.data.correo,
-          nombre: result.data.nombre,
-          telefono: result.data.telefono,
-          ciudad: result.data.ciudad,
-          notas: result.data.notas ?? null
-        })
-      }
-    })
-
-    if (errors.length > 0) {
-      throw new ValidationError(errors)
-    }
-
-    const file = await prisma.file.create({
-      data: {
-        name: req.file.originalname,
-        path: `uploads/${req.file.originalname}`,
-        size: req.file.size,
-        userId: req.userId!
-      },
-      include: {
-        user: {
-          select: {
-            email: true
-          }
-        }
-      }
-    })
-
-    await prisma.document.createMany({
-      data: validRows.map((row) => ({
-        ...row,
-        fileId: file.id
-      }))
-    })
+    const result = await FilesService.uploadFile(
+      req.userId,
+      req.file,
+      req.file.originalname,
+      req.file.size
+    )
 
     res.status(201).json({
       success: true,
-      file: {
-        id: file.id,
-        name: file.name,
-        size: file.size,
-        uploadedBy: file.user.email,
-        createdAt: file.createdAt
-      },
-      documentsCreated: validRows.length
+      file: result.file,
+      documentsCreated: result.documentsCreated
     })
   } catch (error) {
     next(error)
   }
 })
 
-filesRouter.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response, next: NextFunction) => {
+filesRouter.delete('/:id', requireAdmin, async (_req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const file = await prisma.file.findFirst({
-      where: {
-        id: req.params.id
-      }
-    })
+    await FilesService.deleteFile(_req.params.id)
+    res.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+})
 
-    if (!file) {
-      throw new AppError(404, ERROR_MESSAGES.FILE.FILE_NOT_FOUND)
+filesRouter.get('/:id/download', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) {
+      throw new AppError(401, 'No user')
     }
-
-    await prisma.file.delete({ where: { id: req.params.id } })
-
-    res.json({ message: ERROR_MESSAGES.FILE.FILE_DELETED })
+    const { filename, content } = await FilesService.getFileForDownload(req.params.id, req.userId)
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(content)
   } catch (error) {
     next(error)
   }

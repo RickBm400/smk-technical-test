@@ -32,9 +32,9 @@ describe('LoginView', () => {
       }
     })
 
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form').trigger('submit.prevent')
 
-    expect(wrapper.text()).toContain('Email is required')
+    expect(wrapper.text()).toContain('El email es requerido')
   })
 
   it('shows validation error for invalid email format', async () => {
@@ -47,9 +47,9 @@ describe('LoginView', () => {
     const emailInput = wrapper.find('input[type="email"]')
     await emailInput.setValue('invalid-email')
 
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form').trigger('submit.prevent')
 
-    expect(wrapper.text()).toContain('Invalid email format')
+    expect(wrapper.text()).toContain('Formato de email inválido')
   })
 
   it('shows validation error for empty password', async () => {
@@ -62,8 +62,8 @@ describe('LoginView', () => {
     const emailInput = wrapper.find('input[type="email"]')
     await emailInput.setValue('test@example.com')
 
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form').trigger('submit.prevent')
 
-    expect(wrapper.text()).toContain('Password is required')
+    expect(wrapper.text()).toContain('La contraseña es requerida')
   })
 })

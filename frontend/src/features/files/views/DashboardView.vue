@@ -1,6 +1,5 @@
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent } from 'vue'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -22,73 +21,88 @@ export default defineComponent({
     InputText,
     Paginator
   },
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-    const filesStore = useFilesStore()
-
-    const isDragging = ref(false)
-    const selectedFile = ref<File | null>(null)
-
-    const handleLogout = () => {
-      authStore.logout()
-      router.push('/login')
+  data() {
+    return {
+      isDragging: false,
+      selectedFile: null as File | null
     }
-
-    const onDragOver = (event: DragEvent) => {
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    filesStore() {
+      return useFilesStore()
+    },
+    isAdmin(): boolean {
+      return this.authStore.user?.role === 'ADMIN'
+    },
+    showingFrom(): number {
+      return (this.filesStore.pagination.page - 1) * this.filesStore.pagination.limit + 1
+    },
+    showingTo(): number {
+      return Math.min(
+        this.filesStore.pagination.page * this.filesStore.pagination.limit,
+        this.filesStore.pagination.total
+      )
+    }
+  },
+  mounted() {
+    this.authStore.fetchUser()
+    this.filesStore.fetchFiles()
+  },
+  methods: {
+    handleLogout() {
+      this.authStore.logout()
+      this.$router.push({ name: 'login' })
+    },
+    onDragOver(event: DragEvent) {
       event.preventDefault()
-      isDragging.value = true
-    }
-
-    const onDragLeave = () => {
-      isDragging.value = false
-    }
-
-    const onDrop = (event: DragEvent) => {
+      this.isDragging = true
+    },
+    onDragLeave() {
+      this.isDragging = false
+    },
+    onDrop(event: DragEvent) {
       event.preventDefault()
-      isDragging.value = false
+      this.isDragging = false
 
       const files = event.dataTransfer?.files
       if (files && files.length > 0) {
-        handleFile(files[0])
+        this.handleFile(files[0])
       }
-    }
-
-    const onFileSelect = (event: Event) => {
+    },
+    onFileSelect(event: Event) {
       const input = event.target as HTMLInputElement
       if (input.files && input.files.length > 0) {
-        handleFile(input.files[0])
+        this.handleFile(input.files[0])
       }
-    }
-
-    const handleFile = async (file: File) => {
+    },
+    async handleFile(file: File) {
       if (!file.name.endsWith('.csv')) {
-        filesStore.uploadError = [{ row: 0, field: 'file', message: 'Solo se permiten archivos CSV' }]
+        this.filesStore.uploadError = [{ row: 0, field: 'file', message: 'Solo se permiten archivos CSV' }]
         return
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        filesStore.uploadError = [{ row: 0, field: 'file', message: 'El archivo debe ser menor a 10MB' }]
+        this.filesStore.uploadError = [{ row: 0, field: 'file', message: 'El archivo debe ser menor a 10MB' }]
         return
       }
 
-      selectedFile.value = file
-      await filesStore.uploadFile(file)
-      selectedFile.value = null
-    }
-
-    const handleDownload = async (fileId: string, filename: string) => {
-      await filesStore.downloadFile(fileId, filename)
-    }
-
-    const handleDelete = async (fileId: string) => {
-      const result = await filesStore.deleteFile(fileId)
+      this.selectedFile = file
+      await this.filesStore.uploadFile(file)
+      this.selectedFile = null
+    },
+    async handleDownload(fileId: string, filename: string) {
+      await this.filesStore.downloadFile(fileId, filename)
+    },
+    async handleDelete(fileId: string) {
+      const result = await this.filesStore.deleteFile(fileId)
       if (!result.success && result.message) {
-        filesStore.uploadError = [{ row: 0, field: 'file', message: result.message }]
+        this.filesStore.uploadError = [{ row: 0, field: 'file', message: result.message }]
       }
-    }
-
-    const formatDate = (dateString: string) => {
+    },
+    formatDate(dateString: string): string {
       return new Date(dateString).toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'short',
@@ -96,49 +110,20 @@ export default defineComponent({
         hour: '2-digit',
         minute: '2-digit'
       })
-    }
-
-    const formatSize = (bytes: number) => {
+    },
+    formatSize(bytes: number): string {
       if (bytes < 1024) return bytes + ' B'
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-    }
-
-    const clearErrors = () => {
-      filesStore.clearUploadState()
-    }
-
-    const onPageChange = (event: { page: number }) => {
-      filesStore.setPage(event.page + 1)
-    }
-
-    const onSearch = () => {
-      filesStore.fetchFiles()
-    }
-
-    onMounted(async () => {
-      await authStore.fetchUser()
-      await filesStore.fetchFiles()
-    })
-
-    return {
-      authStore,
-      filesStore,
-      isDragging,
-      selectedFile,
-      handleLogout,
-      handleDownload,
-      handleDelete,
-      onDragOver,
-      onDragLeave,
-      onDrop,
-      onFileSelect,
-      formatDate,
-      formatSize,
-      clearErrors,
-      onPageChange,
-      onSearch,
-      isAdmin: authStore.user?.role == 'ADMIN'
+    },
+    clearErrors() {
+      this.filesStore.clearUploadState()
+    },
+    onPageChange(event: { page: number }) {
+      this.filesStore.setPage(event.page + 1)
+    },
+    onSearch() {
+      this.filesStore.fetchFiles()
     }
   }
 })
@@ -315,10 +300,8 @@ export default defineComponent({
           class="mt-4"
         />
 
-        <div v-if="filesStore.pagination.total > 0" class="text-sm text-gray-500 text-center mt-2">
-          Mostrando {{ (filesStore.pagination.page - 1) * filesStore.pagination.limit + 1 }} a
-          {{ Math.min(filesStore.pagination.page * filesStore.pagination.limit, filesStore.pagination.total) }}
-          de {{ filesStore.pagination.total }} entradas
+        <div v-if="filesStore.pagination.total > 0 && filesStore.pagination.totalPages > 1" class="text-sm text-gray-500 text-center mt-2">
+          Mostrando {{ showingFrom }} a {{ showingTo }} de {{ filesStore.pagination.total }} entradas
         </div>
       </div>
     </div>

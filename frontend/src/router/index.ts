@@ -25,7 +25,7 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: true }
     }
   ]
 })
@@ -35,9 +35,9 @@ router.beforeEach((to, _from, next) => {
   const isAuthenticated = !!authStore.token
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login')
+    next({ name: 'login' })
   } else if ((to.name === 'login' || to.name === 'signup') && isAuthenticated) {
-    next('/dashboard')
+    next({ name: 'dashboard' })
   } else {
     next()
   }

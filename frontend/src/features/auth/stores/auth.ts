@@ -1,80 +1,78 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import api from '@/services/api'
 import type { User, LoginCredentials, RegisterData, AuthResponse } from '@/shared/types/auth'
 
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
-  const token = ref<string | null>(localStorage.getItem('token'))
-  const loading = ref(false)
+interface State {
+  user: User | null
+  token: string | null
+  loading: boolean
+}
 
-  const isAuthenticated = computed(() => !!token.value)
-
-  const setAuth = (data: AuthResponse) => {
-    token.value = data.token
-    user.value = data.user
-    localStorage.setItem('token', data.token)
-  }
-
-  const clearAuth = () => {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('token')
-  }
-
-  const login = async (credentials: LoginCredentials) => {
-    loading.value = true
-    try {
-      const { data } = await api.post<AuthResponse>('/auth/login', credentials)
-      setAuth(data)
-      return { success: true }
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.error || 'Inicio de sesión fallido'
+export const useAuthStore = defineStore('auth', {
+  state: (): State => ({
+    user: null,
+    token: localStorage.getItem('token'),
+    loading: false
+  }),
+  getters: {
+    isAuthenticated(state): boolean {
+      return !!state.token
+    }
+  },
+  actions: {
+    setAuth(data: AuthResponse) {
+      this.token = data.token
+      this.user = data.user
+      localStorage.setItem('token', data.token)
+    },
+    clearAuth() {
+      this.token = null
+      this.user = null
+      localStorage.removeItem('token')
+    },
+    async login(credentials: LoginCredentials) {
+      this.loading = true
+      try {
+        const { data } = await api.post<AuthResponse>('/auth/login', credentials)
+        this.setAuth(data)
+        return { success: true }
+      } catch (error: unknown) {
+        const message = this.getErrorMessage(error, 'Inicio de sesión fallido')
+        return { success: false, message }
+      } finally {
+        this.loading = false
       }
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const register = async (registerData: RegisterData) => {
-    loading.value = true
-    try {
-      const { data } = await api.post<User>('/auth/register', registerData)
-      return { success: true, user: data }
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.error || 'Registro fallido'
+    },
+    async register(registerData: RegisterData) {
+      this.loading = true
+      try {
+        const { data } = await api.post<User>('/auth/register', registerData)
+        return { success: true, user: data }
+      } catch (error: unknown) {
+        const message = this.getErrorMessage(error, 'Registro fallido')
+        return { success: false, message }
+      } finally {
+        this.loading = false
       }
-    } finally {
-      loading.value = false
+    },
+    logout() {
+      this.clearAuth()
+    },
+    async fetchUser() {
+      if (!this.token) return
+      try {
+        const { data } = await api.get<User>('/auth/me')
+        this.user = data
+      } catch {
+        this.clearAuth()
+      }
+    },
+    getErrorMessage(error: unknown, fallback: string): string {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } }
+        return axiosError.response?.data?.error || fallback
+      }
+      return fallback
     }
-  }
-
-  const logout = () => {
-    clearAuth()
-  }
-
-  const fetchUser = async () => {
-    if (!token.value) return
-    try {
-      const { data } = await api.get<User>('/auth/me')
-      user.value = data
-    } catch {
-      clearAuth()
-    }
-  }
-
-  return {
-    user,
-    token,
-    loading,
-    isAuthenticated,
-    login,
-    register,
-    logout,
-    fetchUser
   }
 })

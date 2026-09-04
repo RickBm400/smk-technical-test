@@ -1,7 +1,10 @@
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import { AppError } from './errorHandler.js'
+import { UnauthorizedError } from '../common/errors/index.js'
+import { env } from '../config/env.js'
 import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
+import type { JwtPayload } from '../types/jwt.js'
+import type { Request } from 'express'
 
 export interface AuthRequest extends Request {
   userId?: string
@@ -16,20 +19,17 @@ export const authMiddleware = (
   const authHeader = req.headers.authorization
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return next(new AppError(401, ERROR_MESSAGES.AUTH.NO_TOKEN_PROVIDED))
+    return next(new UnauthorizedError(ERROR_MESSAGES.AUTH.NO_TOKEN_PROVIDED))
   }
 
   const token = authHeader.split(' ')[1]
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      userId: string
-      role: string
-    }
+    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload
     req.userId = decoded.userId
     req.userRole = decoded.role
     next()
   } catch {
-    return next(new AppError(401, ERROR_MESSAGES.AUTH.INVALID_TOKEN))
+    return next(new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_TOKEN))
   }
 }

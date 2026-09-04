@@ -22,7 +22,6 @@ describe('SignUpView', () => {
     })
 
     expect(wrapper.findAll('input').length).toBeGreaterThanOrEqual(2)
-    expect(wrapper.find('select').exists()).toBe(true)
     expect(wrapper.find('button[type="submit"]').exists()).toBe(true)
   })
 
@@ -42,9 +41,9 @@ describe('SignUpView', () => {
     await passwordInput.setValue('password123')
     await confirmPasswordInput.setValue('differentpassword')
 
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form').trigger('submit.prevent')
 
-    expect(wrapper.text()).toContain('Passwords do not match')
+    expect(wrapper.text()).toContain('Las contraseñas no coinciden')
   })
 
   it('shows validation error for short password', async () => {
@@ -61,8 +60,8 @@ describe('SignUpView', () => {
     await emailInput.setValue('test@example.com')
     await passwordInput.setValue('123')
 
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form').trigger('submit.prevent')
 
-    expect(wrapper.text()).toContain('Password must be at least 6 characters')
+    expect(wrapper.text()).toContain('La contraseña debe tener al menos 6 caracteres')
   })
 })

@@ -1,6 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent } from 'vue'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
@@ -15,61 +14,56 @@ export default defineComponent({
     Button,
     Message
   },
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-
-    const email = ref('')
-    const password = ref('')
-    const errorMessage = ref('')
-    const successMessage = ref('')
-
-    const validateEmail = (value: string): boolean => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      return emailRegex.test(value)
-    }
-
-    const handleLogin = async () => {
-      errorMessage.value = ''
-      successMessage.value = ''
-
-      if (!email.value) {
-        errorMessage.value = 'El email es requerido'
-        return
-      }
-
-      if (!validateEmail(email.value)) {
-        errorMessage.value = 'Formato de email inválido'
-        return
-      }
-
-      if (!password.value) {
-        errorMessage.value = 'La contraseña es requerida'
-        return
-      }
-
-      const result = await authStore.login({
-        email: email.value,
-        password: password.value
-      })
-
-      if (result.success) {
-        successMessage.value = '¡Inicio de sesión exitoso!'
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 500)
-      } else {
-        errorMessage.value = result.message || 'Inicio de sesión fallido'
-      }
-    }
-
+  data() {
     return {
-      email,
-      password,
-      errorMessage,
-      successMessage,
-      handleLogin,
-      authStore
+      email: '',
+      password: '',
+      errorMessage: '',
+      successMessage: ''
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    isEmailValid(): boolean {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emailRegex.test(this.email)
+    }
+  },
+  methods: {
+    handleLogin() {
+      this.errorMessage = ''
+      this.successMessage = ''
+
+      if (!this.email) {
+        this.errorMessage = 'El email es requerido'
+        return
+      }
+
+      if (!this.isEmailValid) {
+        this.errorMessage = 'Formato de email inválido'
+        return
+      }
+
+      if (!this.password) {
+        this.errorMessage = 'La contraseña es requerida'
+        return
+      }
+
+      this.authStore.login({
+        email: this.email,
+        password: this.password
+      }).then((result) => {
+        if (result.success) {
+          this.successMessage = '¡Inicio de sesión exitoso!'
+          setTimeout(() => {
+            this.$router.push({ name: 'dashboard' })
+          }, 500)
+        } else {
+          this.errorMessage = result.message || 'Inicio de sesión fallido'
+        }
+      })
     }
   }
 })

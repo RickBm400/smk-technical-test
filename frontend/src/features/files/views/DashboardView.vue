@@ -7,6 +7,7 @@ import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
 import InputText from 'primevue/inputtext'
 import Paginator from 'primevue/paginator'
+import Tag from 'primevue/tag'
 import { useAuthStore } from '@/features/auth/stores/auth'
 import { useFilesStore } from '@/features/files/stores/files'
 import { formatDate, formatSize } from '@/shared/utils/format'
@@ -21,7 +22,8 @@ export default defineComponent({
     Message,
     ProgressBar,
     InputText,
-    Paginator
+    Paginator,
+    Tag
   },
   data() {
     return {
@@ -126,7 +128,11 @@ export default defineComponent({
         <h1 class="text-xl font-bold">CSV Manager - Panel</h1>
         <div class="flex items-center gap-4">
           <span class="text-gray-600">{{ authStore.user?.email }}</span>
-          <span class="text-sm text-gray-500">({{ authStore.user?.role }})</span>
+          <Tag
+            :severity="isAdmin ? 'danger' : 'info'"
+            :value="isAdmin ? 'Administrador' : 'Miembro'"
+            :icon="isAdmin ? 'pi pi-shield' : 'pi pi-user'"
+          />
           <Button label="Cerrar Sesión" severity="secondary" @click="handleLogout" />
         </div>
       </div>

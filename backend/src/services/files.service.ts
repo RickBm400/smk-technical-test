@@ -175,9 +175,9 @@ export class FilesService {
     await prisma.file.delete({ where: { id: fileId } })
   }
 
-  static async getFileForDownload(fileId: string, userId: string) {
+  static async getFileForDownload(fileId: string) {
     const file = await prisma.file.findFirst({
-      where: { id: fileId, userId },
+      where: { id: fileId },
       include: { documents: true }
     })
 

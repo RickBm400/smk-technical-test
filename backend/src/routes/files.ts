@@ -85,7 +85,7 @@ filesRouter.get('/:id/download', async (req: AuthRequest, res: Response, next: N
     if (!req.userId) {
       throw new BadRequestError('No user')
     }
-    const { filename, content } = await FilesService.getFileForDownload(req.params.id, req.userId)
+    const { filename, content } = await FilesService.getFileForDownload(req.params.id)
     res.setHeader('Content-Type', 'text/csv; charset=utf-8')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.send(content)

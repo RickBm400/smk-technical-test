@@ -1,24 +1,30 @@
 # Tasks List
 
-## Completed Tasks
+Resumen general de las tareas completadas en el proyecto.
 
-- [x] Task-1: Login - Login con validación de email y password
-- [x] Task-2: SignUp - Registro con email, password y rol
-- [x] Task-3: Login Feedback - UI feedback con PrimeVue alerts
-- [x] Task-4: Testing - Unit tests para login y sign up
-- [x] Task-5: Logout - Funcionalidad de logout con redirección al login
-- [x] Task-6: Gitignore y README - Archivos de documentación y configuración git
+## Auth
 
-## Pending Tasks
+- [x] Task-1: [Login](./tasks/auth/login.md) - Inicio de sesión con validación de email y contraseña
+- [x] Task-2: [SignUp](./tasks/auth/signup.md) - Registro con email, contraseña y rol
+- [x] Task-3: [Login Feedback](./tasks/auth/login-feedback.md) - Feedback de UI con componentes PrimeVue
+- [x] Task-4: [Testing](./tasks/auth/testing.md) - Tests unitarios para login y signup
+- [x] Task-5: [Logout](./tasks/auth/logout.md) - Cierre de sesión con redirección al login
+
+## Setup
+
+- [x] Task-6: [Gitignore y README](./tasks/setup/gitignore-and-readme.md) - Archivos de documentación y configuración de Git
+
+## Pendientes
 
 <!-- TODO: Agregar nuevas tareas aquí -->
 
-## Notes
+## Notas
 
-Ver documentación detallada en:
-- `TODO-Task1-Login.md`
-- `TODO-Task2-SignUp.md`
-- `TODO-Task3-LoginFeedback.md`
-- `TODO-Task4-Testing.md`
-- `TODO-Task5-Logout.md`
-- `TODO-Task6-GitignoreReadme.md`
+La documentación detallada de cada tarea se encuentra organizada en subcarpetas dentro de `tasks/`:
+
+- `tasks/auth/` - Tareas de autenticación
+- `tasks/backend-features/` - Funcionalidades del backend
+- `tasks/backend-rbac/` - Control de acceso
+- `tasks/frontend-features/` - Funcionalidades del frontend
+- `tasks/refactoring/` - Refactorización
+- `tasks/setup/` - Configuración inicial

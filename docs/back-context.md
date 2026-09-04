@@ -1,60 +1,97 @@
 # Backend Context
 
-Web application for managing CSV files with user authentication.
+API REST para una aplicación de gestión de archivos CSV con autenticación de usuarios.
 
-## General Description
+## Descripción general
 
-REST API backend for a CSV file management application. Supports user authentication with roles (ADMIN, MEMBER) and CRUD operations for CSV files.
+Backend en Node.js + Express que provee endpoints para la gestión de archivos CSV. Soporta autenticación con JWT, control de acceso basado en roles (ADMIN, MEMBER) y operaciones CRUD sobre archivos y documentos.
 
 ## Stack
 
-- **Language/Framework**: Node.js + Express + TypeScript
-- **Database**: PostgreSQL
-- **ORM/ODM**: Prisma
-- **API Style**: REST
-- **Authentication**: JWT
+- **Lenguaje/Framework**: Node.js + Express + TypeScript
+- **Base de datos**: PostgreSQL
+- **ORM**: Prisma
+- **Estilo de API**: REST
+- **Autenticación**: JWT
+- **Validación**: Zod
+- **Upload de archivos**: Multer + csv-parse
 
-## Prerequisites
+## Requisitos previos
 
 - Node.js 18+
 - PostgreSQL 14+
 - pnpm
 
-## Ports and Services
+## Puertos y servicios
 
-| Port | Service | Description |
-|------|---------|-------------|
-| 3001 | Express API | Main backend server |
+| Puerto | Servicio | Descripción |
+|--------|----------|-------------|
+| 3001 | Express API | Servidor backend principal |
 
-## Environment Variables
+## Variables de entorno
 
 ```
-DATABASE_URL
-JWT_SECRET
+DATABASE_URL=postgresql://user:password@localhost:5432/csvmanager
+JWT_SECRET=your-super-secret-key
 PORT=3001
+FRONTEND_URL=http://localhost:5173
+JWT_EXPIRES_IN=24h
 ```
 
-## Main Endpoints
+## Endpoints principales
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| POST | /api/auth/register | Register new user |
-| POST | /api/auth/login | User login |
-| GET | /api/files | List CSV files |
-| POST | /api/files | Upload CSV file |
-| GET | /api/files/:id | Get file details |
-| DELETE | /api/files/:id | Delete file |
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| POST | `/api/auth/register` | Registrar nuevo usuario | No |
+| POST | `/api/auth/login` | Inicio de sesión | No |
+| GET | `/api/auth/me` | Obtener usuario actual | Sí |
+| GET | `/api/files` | Listar archivos CSV (paginado) | Sí |
+| POST | `/api/files/upload` | Subir archivo CSV | Sí |
+| GET | `/api/files/:id` | Obtener detalles de archivo | Sí |
+| GET | `/api/files/:id/download` | Descargar archivo CSV reconstruido | Sí |
+| DELETE | `/api/files/:id` | Eliminar archivo | Sí (ADMIN) |
 
-## Data Models
+## Modelos de datos
 
 ### User
-- id, email, password, role (ADMIN|MEMBER), createdAt
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | String (UUID) | Identificador único |
+| email | String | Email único |
+| password | String | Contraseña hasheada (bcrypt) |
+| role | Enum | `ADMIN` o `MEMBER` (default: `MEMBER`) |
+| createdAt | DateTime | Fecha de creación |
+| updatedAt | DateTime | Fecha de actualización |
 
 ### File
-- id, name, path, size, userId, createdAt
 
-## Important Middlewares
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | String (UUID) | Identificador único |
+| name | String | Nombre original del archivo |
+| path | String | Ruta del archivo |
+| size | Int | Tamaño en bytes |
+| userId | String | Referencia al usuario que subió el archivo |
+| createdAt | DateTime | Fecha de subida |
+| updatedAt | DateTime | Fecha de actualización |
 
-- authMiddleware (JWT verification)
-- errorHandler
-- validateRequest (Zod schemas)
+### Document
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | String (UUID) | Identificador único |
+| fileId | String | Referencia al archivo |
+| correo | String | Email validado |
+| nombre | String | Nombre de la persona |
+| telefono | String | Teléfono (7-15 dígitos) |
+| ciudad | String | Ciudad |
+| notas | String? | Notas (opcional) |
+
+## Middlewares principales
+
+- **authMiddleware**: Verifica el token JWT en el header `Authorization`
+- **requireAdmin**: Verifica que el usuario tenga rol `ADMIN`
+- **validateBody/validateQuery**: Valida payloads con esquemas Zod
+- **uploadMiddleware**: Maneja la subida de archivos con Multer (10MB max)
+- **errorHandler**: Manejo centralizado de errores con respuestas en español

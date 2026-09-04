@@ -1,52 +1,63 @@
 # Frontend Context
 
-Web application for manage CSV files.
+Aplicación web para la gestión de archivos CSV.
 
 ## Stack
 
-- **Framework**: VueJs (Options API), Pinia, Axios, Vue Router
-- **Language**: TypeScript
-- **Styling**: Tailwind, CSS Global Components, PrimeVue, mdijs, vue-icon
-- **State**: Pinia
-- **Building tools**: Vite, pnpm
+- **Framework**: Vue 3 (Options API)
+- **Estado**: Pinia
+- **HTTP**: Axios
+- **Router**: Vue Router
+- **Lenguaje**: TypeScript
+- **UI**: PrimeVue, PrimeIcons
+- **Estilos**: Tailwind, CSS global
+- **Tipografía**: DM Sans (Google Fonts)
+- **Build**: Vite, pnpm
 - **Testing**: Vitest
 
-## Architecture
+## Arquitectura
 
-The project follows a feature shared architecture using Options API.
+El proyecto sigue una arquitectura feature-shared usando Vue Options API.
 
+```
 src/
 ├── features/
-│   ├── auth/
-│   ├── users/
-│   ├── products/
-│   └── orders/
+│   ├── auth/                  # Login, SignUp, Logout
+│   │   ├── views/
+│   │   ├── stores/
+│   │   └── tests/
+│   └── files/                 # Dashboard, upload, descarga
+│       ├── views/
+│       └── stores/
 │
 ├── shared/
-│   ├── components/
-│   ├── composables/
-│   ├── utils/
-│   ├── types/
-│   └── constants/
+│   ├── constants/             # STORAGE_KEYS, FILE_CONSTANTS
+│   ├── types/                 # User, RegisterData, etc.
+│   ├── utils/                 # formatDate, formatSize, validation
+│   ├── services/              # api.ts (axios instance)
+│   └── ...
 │
-├── layouts/
-├── router/
-├── services/
-│   └── api.ts
+├── router/                    # Vue Router config
 │
 ├── App.vue
 └── main.ts
-
-## Env variables
-
-```
-PORT
-BACKEND_URL
 ```
 
-## Routes
+## Variables de entorno
 
-- /login
-- /signup
-- /dashboard
+```
+VITE_BACKEND_URL=http://localhost:3001
+```
 
+## Rutas
+
+| Ruta | Componente | Protegida |
+|------|------------|-----------|
+| `/login` | `LoginView` | No |
+| `/signup` | `SignUpView` | No |
+| `/dashboard` | `DashboardView` | Sí (requiere auth) |
+
+## Roles
+
+- **ADMIN**: Puede ver, subir, descargar y eliminar archivos
+- **MEMBER**: Puede ver, subir y descargar archivos (no eliminar)

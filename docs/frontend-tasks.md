@@ -1,35 +1,45 @@
-# Tasks List
+# Frontend Tasks List
 
-# Task-1: Login
+Lista de tareas correspondientes al proyecto frontend.
 
-The application must allow users to access data through the login component, it must check email format and a secured password.
+## Auth
 
-Forgot password won't be necessary
+### Task-1: Login
 
-# Task-2: SignUp
+La aplicación debe permitir a los usuarios acceder a los datos mediante un componente de inicio de sesión. Debe validar el formato del correo electrónico y una contraseña segura.
 
-Basic form with email and password with double validation using a confirm password field, add a field for rol selection [ADMIN, MEMBER]
+**Nota:** No es necesario implementar recuperación de contraseña.
 
-# Task-3: Login feedback
+### Task-2: SignUp
 
-The frontend may provide UI Feedback using primevue components like alerts
+Formulario básico con email y contraseña con doble validación usando un campo de confirmación de contraseña. Debe incluir un campo para la selección de rol: `[ADMIN, MEMBER]`.
 
-# Task-4: Testing
+### Task-3: Login feedback
 
-Implement unit testing over login and sign up features
+El frontend debe proporcionar feedback visual mediante componentes de PrimeVue como alertas.
 
-# Task-5: Logout
+### Task-4: Testing
 
-Users must be able to logout from the dashboard when logout button is clicked.
+Implementar tests unitarios sobre las funcionalidades de login y signup.
 
-# Task-6: Paginated dashboard ✓
+### Task-5: Logout
 
-Add a pagination function for csv files list, leave a minimun of 10 regists, add search bar for filter regists unsig debouncing
+Los usuarios deben poder cerrar sesión desde el dashboard al hacer clic en el botón de logout.
+
+## Dashboard
+
+### Task-6: Paginated dashboard ✓
+
+Agregar función de paginación para la lista de archivos CSV, dejando un mínimo de 10 registros. Agregar barra de búsqueda para filtrar registros usando debouncing.
 
 **Status:** Completed ✓
 
-# Task-7: Dashboard table actions ✓
+**Detalles:** [Ver documentación](./tasks/frontend-features/pagination.md)
 
-Implement role base function attatched to buttons inside each table row on dashboard component, one for download file content and another for delete regist from db. The delete regist function must be displayed only for ADMIN users. Also, for the download button functionality, get the data from the backend and create / download a CSV on the current client
+### Task-7: Dashboard table actions ✓
+
+Implementar funciones basadas en roles mediante botones dentro de cada fila de la tabla del dashboard: uno para descargar el contenido del archivo y otro para eliminar el registro de la base de datos. La función de eliminar registro debe mostrarse solo para usuarios ADMIN. Para la funcionalidad del botón de descarga, obtener los datos del backend y crear/descargar un CSV en el cliente actual.
 
 **Status:** Completed ✓
+
+**Detalles:** [Ver documentación](./tasks/frontend-features/table-actions.md)

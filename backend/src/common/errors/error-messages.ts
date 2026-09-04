@@ -7,7 +7,8 @@ export const ERROR_MESSAGES = {
     UNEXPECTED_FILE_FIELD: 'Campo de archivo inesperado',
     FILE_NOT_FOUND: 'Archivo no encontrado',
     FILE_DELETED: 'Archivo eliminado',
-    NAME_REQUIRED: 'Nombre, ruta y tamaño son requeridos'
+    NAME_REQUIRED: 'Nombre, ruta y tamaño son requeridos',
+    NO_DOCUMENTS_FOUND: 'No se encontraron documentos para este archivo'
   },
   CSV_VALIDATION: {
     CORREO_INVALID: 'Correo debe ser un email válido',

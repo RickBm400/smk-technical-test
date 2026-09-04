@@ -9,6 +9,7 @@ import { uploadMiddleware } from '../config/multer.js'
 import { csvRowSchema, type CsvValidationError } from '../types/schemas.js'
 import { requireAdmin } from '../middleware/role.js'
 import { ERROR_MESSAGES } from '../common/errors/error-messages.js'
+import { buildCsv } from '../utils/csvBuilder.js'
 
 export const filesRouter: ExpressRouter = Router()
 
@@ -90,6 +91,41 @@ filesRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFuncti
     }
 
     res.json(file)
+  } catch (error) {
+    next(error)
+  }
+})
+
+filesRouter.get('/:id/download', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const file = await prisma.file.findFirst({
+      where: {
+        id: req.params.id,
+      },
+      include: {
+        documents: true
+      }
+    })
+
+    if (!file) {
+      throw new AppError(404, ERROR_MESSAGES.FILE.FILE_NOT_FOUND)
+    }
+
+    if (file.documents.length === 0) {
+      throw new AppError(404, ERROR_MESSAGES.FILE.NO_DOCUMENTS_FOUND)
+    }
+
+    const csvContent = buildCsv(file.documents.map(doc => ({
+      correo: doc.correo,
+      nombre: doc.nombre,
+      telefono: doc.telefono,
+      ciudad: doc.ciudad,
+      notas: doc.notas
+    })))
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`)
+    res.send(csvContent)
   } catch (error) {
     next(error)
   }

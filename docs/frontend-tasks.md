@@ -27,3 +27,9 @@ Users must be able to logout from the dashboard when logout button is clicked.
 Add a pagination function for csv files list, leave a minimun of 10 regists, add search bar for filter regists unsig debouncing
 
 **Status:** Completed ✓
+
+# Task-7: Dashboard table actions ✓
+
+Implement role base function attatched to buttons inside each table row on dashboard component, one for download file content and another for delete regist from db. The delete regist function must be displayed only for ADMIN users. Also, for the download button functionality, get the data from the backend and create / download a CSV on the current client
+
+**Status:** Completed ✓

@@ -56,3 +56,10 @@ Create error-messages.ts file with all error messages centralized and update bac
 for /files endpoint, implement a paginated mechanism in order to reduce response load, add the functionality of search regist by file name or user id
 
 **Status:** Completed ✓
+
+
+# Task-9: Download file and Soft Delete ✓
+
+Implement a download file endpoint; from the documents collection, create an endpoint which, given a file id, rebuild the csv through json file and send it to the frontend layer
+
+**Status:** Completed ✓

@@ -77,6 +77,17 @@ export default defineComponent({
       selectedFile.value = null
     }
 
+    const handleDownload = async (fileId: string, filename: string) => {
+      await filesStore.downloadFile(fileId, filename)
+    }
+
+    const handleDelete = async (fileId: string) => {
+      const result = await filesStore.deleteFile(fileId)
+      if (!result.success && result.message) {
+        filesStore.uploadError = [{ row: 0, field: 'file', message: result.message }]
+      }
+    }
+
     const formatDate = (dateString: string) => {
       return new Date(dateString).toLocaleDateString('es-ES', {
         year: 'numeric',
@@ -116,6 +127,8 @@ export default defineComponent({
       isDragging,
       selectedFile,
       handleLogout,
+      handleDownload,
+      handleDelete,
       onDragOver,
       onDragLeave,
       onDrop,
@@ -125,7 +138,7 @@ export default defineComponent({
       clearErrors,
       onPageChange,
       onSearch,
-      isAdmin: authStore.user?.role === 'ADMIN'
+      isAdmin: authStore.user?.role == 'ADMIN'
     }
   }
 })
@@ -259,6 +272,31 @@ export default defineComponent({
           <Column field="createdAt" header="Fecha de Carga" sortable>
             <template #body="{ data }">
               {{ formatDate(data.createdAt) }}
+            </template>
+          </Column>
+          <Column header="Acciones">
+            <template #body="{ data }">
+              <div class="flex gap-2">
+                <Button
+                  icon="pi pi-download"
+                  severity="secondary"
+                  text
+                  rounded
+                  aria-label="Descargar"
+                  v-tooltip.top="'Descargar'"
+                  @click="handleDownload(data.id, data.name)"
+                />
+                <Button
+                  v-if="isAdmin"
+                  icon="pi pi-trash"
+                  severity="danger"
+                  text
+                  rounded
+                  aria-label="Eliminar"
+                  v-tooltip.top="'Eliminar'"
+                  @click="handleDelete(data.id)"
+                />
+              </div>
             </template>
           </Column>
         </DataTable>

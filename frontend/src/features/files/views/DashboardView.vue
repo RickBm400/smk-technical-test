@@ -126,14 +126,19 @@ export default defineComponent({
     <nav class="bg-white shadow-md">
       <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <h1 class="text-xl font-bold">CSV Manager - Panel</h1>
-        <div class="flex items-center gap-4">
-          <span class="text-gray-600">{{ authStore.user?.email }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-600">{{ authStore.user?.email }}</span>
           <Tag
             :severity="isAdmin ? 'danger' : 'info'"
             :value="isAdmin ? 'Administrador' : 'Miembro'"
             :icon="isAdmin ? 'pi pi-shield' : 'pi pi-user'"
           />
-          <Button label="Cerrar Sesión" severity="secondary" @click="handleLogout" />
+          <Button
+            label="Cerrar Sesión"
+            severity="secondary"
+            size="small"
+            @click="handleLogout"
+          />
         </div>
       </div>
     </nav>
@@ -164,6 +169,7 @@ export default defineComponent({
             <Button
               label="Seleccionar Archivo"
               severity="secondary"
+              size="small"
               as="span"
               class="cursor-pointer"
             />
@@ -216,17 +222,18 @@ export default defineComponent({
       <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-semibold">Sus Archivos CSV</h2>
-          <div class="flex gap-2">
-            <span class="p-input-icon-left">
-              <InputText
-                v-model="filesStore.searchQuery"
-                placeholder="Buscar por nombre o usuario..."
-                @keyup.enter="onSearch"
-              />
-            </span>
+          <div class="flex gap-2 items-center">
+            <InputText
+              v-model="filesStore.searchQuery"
+              placeholder="Buscar por nombre o usuario..."
+              size="small"
+              @keyup.enter="onSearch"
+              class="text-sm"
+            />
             <Button
               label="Buscar"
               severity="secondary"
+              size="small"
               @click="onSearch"
             />
           </div>
@@ -257,12 +264,13 @@ export default defineComponent({
           </Column>
           <Column header="Acciones">
             <template #body="{ data }">
-              <div class="flex gap-2">
+              <div class="flex gap-1">
                 <Button
                   icon="pi pi-download"
                   severity="secondary"
                   text
                   rounded
+                  size="small"
                   aria-label="Descargar"
                   v-tooltip.top="'Descargar'"
                   @click="handleDownload(data.id, data.name)"
@@ -273,6 +281,7 @@ export default defineComponent({
                   severity="danger"
                   text
                   rounded
+                  size="small"
                   aria-label="Eliminar"
                   v-tooltip.top="'Eliminar'"
                   @click="handleDelete(data.id)"

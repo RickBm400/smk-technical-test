@@ -63,12 +63,12 @@ export default defineComponent({
 
     const handleFile = async (file: File) => {
       if (!file.name.endsWith('.csv')) {
-        filesStore.uploadError = [{ row: 0, field: 'file', message: 'Only CSV files are allowed' }]
+        filesStore.uploadError = [{ row: 0, field: 'file', message: 'Solo se permiten archivos CSV' }]
         return
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        filesStore.uploadError = [{ row: 0, field: 'file', message: 'File size must be less than 10MB' }]
+        filesStore.uploadError = [{ row: 0, field: 'file', message: 'El archivo debe ser menor a 10MB' }]
         return
       }
 
@@ -78,7 +78,7 @@ export default defineComponent({
     }
 
     const formatDate = (dateString: string) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
+      return new Date(dateString).toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -135,18 +135,18 @@ export default defineComponent({
   <div class="min-h-screen bg-gray-100">
     <nav class="bg-white shadow-md">
       <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">CSV Manager - Dashboard</h1>
+        <h1 class="text-xl font-bold">CSV Manager - Panel</h1>
         <div class="flex items-center gap-4">
           <span class="text-gray-600">{{ authStore.user?.email }}</span>
           <span class="text-sm text-gray-500">({{ authStore.user?.role }})</span>
-          <Button label="Logout" severity="secondary" @click="handleLogout" />
+          <Button label="Cerrar Sesión" severity="secondary" @click="handleLogout" />
         </div>
       </div>
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4">Upload CSV File</h2>
+        <h2 class="text-lg font-semibold mb-4">Subir Archivo CSV</h2>
 
         <div
           class="border-2 border-dashed rounded-lg p-8 text-center transition-colors"
@@ -157,7 +157,7 @@ export default defineComponent({
         >
           <i class="pi pi-upload text-4xl text-gray-400 mb-4"></i>
           <p class="text-gray-600 mb-4">
-            Drag and drop your CSV file here, or click to select
+            Arrastre y suelte su archivo CSV aquí, o haga clic para seleccionar
           </p>
           <input
             type="file"
@@ -168,13 +168,13 @@ export default defineComponent({
           />
           <label for="fileInput">
             <Button
-              label="Select File"
+              label="Seleccionar Archivo"
               severity="secondary"
               as="span"
               class="cursor-pointer"
             />
           </label>
-          <p class="text-sm text-gray-400 mt-2">Maximum file size: 10MB</p>
+          <p class="text-sm text-gray-400 mt-2">Tamaño máximo del archivo: 10MB</p>
         </div>
 
         <ProgressBar
@@ -185,25 +185,25 @@ export default defineComponent({
         />
 
         <div v-if="selectedFile" class="mt-4 text-sm text-gray-600">
-          Selected: {{ selectedFile.name }} ({{ formatSize(selectedFile.size) }})
+          Seleccionado: {{ selectedFile.name }} ({{ formatSize(selectedFile.size) }})
         </div>
 
         <div v-if="filesStore.uploadError" class="mt-4">
           <Message severity="error" @close="clearErrors">
-            <strong>Upload Failed:</strong>
+            <strong>Carga Fallida:</strong>
           </Message>
           <div class="mt-2 bg-red-50 border border-red-200 rounded p-4 max-h-60 overflow-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="text-left">
-                  <th class="pr-4 pb-2">Row</th>
-                  <th class="pr-4 pb-2">Field</th>
+                  <th class="pr-4 pb-2">Fila</th>
+                  <th class="pr-4 pb-2">Campo</th>
                   <th class="pb-2">Error</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(error, index) in filesStore.uploadError" :key="index" class="border-t border-red-100">
-                  <td class="pr-4 py-2">{{ error.row || 'File' }}</td>
+                  <td class="pr-4 py-2">{{ error.row || 'Archivo' }}</td>
                   <td class="pr-4 py-2 font-medium">{{ error.field }}</td>
                   <td class="py-2 text-red-600">{{ error.message }}</td>
                 </tr>
@@ -214,24 +214,24 @@ export default defineComponent({
 
         <div v-if="filesStore.uploadSuccess" class="mt-4">
           <Message severity="success" @close="clearErrors">
-            File uploaded successfully!
+            ¡Archivo cargado exitosamente!
           </Message>
         </div>
       </div>
 
       <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">Your CSV Files</h2>
+          <h2 class="text-lg font-semibold">Sus Archivos CSV</h2>
           <div class="flex gap-2">
             <span class="p-input-icon-left">
               <InputText
                 v-model="filesStore.searchQuery"
-                placeholder="Search by name or user..."
+                placeholder="Buscar por nombre o usuario..."
                 @keyup.enter="onSearch"
               />
             </span>
             <Button
-              label="Search"
+              label="Buscar"
               severity="secondary"
               @click="onSearch"
             />
@@ -244,19 +244,19 @@ export default defineComponent({
           stripedRows
           class="w-full"
         >
-          <Column field="name" header="File Name" sortable />
-          <Column header="Size" sortable sortField="size">
+          <Column field="name" header="Nombre del Archivo" sortable />
+          <Column header="Tamaño" sortable sortField="size">
             <template #body="{ data }">
               {{ formatSize(data.size) }}
             </template>
           </Column>
-          <Column field="uploadedBy" header="Uploaded By" sortable />
-          <Column header="Documents">
+          <Column field="uploadedBy" header="Subido Por" sortable />
+          <Column header="Documentos">
             <template #body="{ data }">
               {{ data.documentCount || 0 }}
             </template>
           </Column>
-          <Column field="createdAt" header="Upload Date" sortable>
+          <Column field="createdAt" header="Fecha de Carga" sortable>
             <template #body="{ data }">
               {{ formatDate(data.createdAt) }}
             </template>
@@ -264,7 +264,7 @@ export default defineComponent({
         </DataTable>
 
         <div v-if="!filesStore.loading && filesStore.files.length === 0" class="text-center py-8">
-          <p class="text-gray-500">No files found.</p>
+          <p class="text-gray-500">No se encontraron archivos.</p>
         </div>
 
         <Paginator
@@ -278,9 +278,9 @@ export default defineComponent({
         />
 
         <div v-if="filesStore.pagination.total > 0" class="text-sm text-gray-500 text-center mt-2">
-          Showing {{ (filesStore.pagination.page - 1) * filesStore.pagination.limit + 1 }} to
+          Mostrando {{ (filesStore.pagination.page - 1) * filesStore.pagination.limit + 1 }} a
           {{ Math.min(filesStore.pagination.page * filesStore.pagination.limit, filesStore.pagination.total) }}
-          of {{ filesStore.pagination.total }} entries
+          de {{ filesStore.pagination.total }} entradas
         </div>
       </div>
     </div>

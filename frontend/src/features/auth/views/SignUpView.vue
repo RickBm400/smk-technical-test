@@ -29,8 +29,8 @@ export default defineComponent({
     const successMessage = ref('')
 
     const roles = [
-      { label: 'Member', value: 'MEMBER' },
-      { label: 'Admin', value: 'ADMIN' }
+      { label: 'Miembro', value: 'MEMBER' },
+      { label: 'Administrador', value: 'ADMIN' }
     ]
 
     const validateEmail = (value: string): boolean => {
@@ -43,32 +43,32 @@ export default defineComponent({
       successMessage.value = ''
 
       if (!email.value) {
-        errorMessage.value = 'Email is required'
+        errorMessage.value = 'El email es requerido'
         return
       }
 
       if (!validateEmail(email.value)) {
-        errorMessage.value = 'Invalid email format'
+        errorMessage.value = 'Formato de email inválido'
         return
       }
 
       if (!password.value) {
-        errorMessage.value = 'Password is required'
+        errorMessage.value = 'La contraseña es requerida'
         return
       }
 
       if (password.value.length < 6) {
-        errorMessage.value = 'Password must be at least 6 characters'
+        errorMessage.value = 'La contraseña debe tener al menos 6 caracteres'
         return
       }
 
       if (!confirmPassword.value) {
-        errorMessage.value = 'Please confirm your password'
+        errorMessage.value = 'Por favor confirme su contraseña'
         return
       }
 
       if (password.value !== confirmPassword.value) {
-        errorMessage.value = 'Passwords do not match'
+        errorMessage.value = 'Las contraseñas no coinciden'
         return
       }
 
@@ -79,12 +79,12 @@ export default defineComponent({
       })
 
       if (result.success) {
-        successMessage.value = 'Registration successful! Redirecting to login...'
+        successMessage.value = '¡Registro exitoso! Redirigiendo al inicio de sesión...'
         setTimeout(() => {
           router.push('/login')
         }, 1500)
       } else {
-        errorMessage.value = result.message || 'Registration failed'
+        errorMessage.value = result.message || 'Registro fallido'
       }
     }
 
@@ -106,7 +106,7 @@ export default defineComponent({
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
-      <h1 class="text-2xl font-bold mb-6 text-center">CSV Manager - Sign Up</h1>
+      <h1 class="text-2xl font-bold mb-6 text-center">CSV Manager - Registro</h1>
 
       <Message v-if="errorMessage" severity="error" class="mb-4">
         {{ errorMessage }}
@@ -123,38 +123,38 @@ export default defineComponent({
             id="email"
             v-model="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Ingrese su email"
             class="w-full"
           />
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="password" class="text-sm font-medium">Password</label>
+          <label for="password" class="text-sm font-medium">Contraseña</label>
           <Password
             id="password"
             v-model="password"
             toggleMask
-            placeholder="Enter your password"
+            placeholder="Ingrese su contraseña"
             inputClass="w-full"
             class="w-full"
           />
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="confirmPassword" class="text-sm font-medium">Confirm Password</label>
+          <label for="confirmPassword" class="text-sm font-medium">Confirmar Contraseña</label>
           <Password
             id="confirmPassword"
             v-model="confirmPassword"
             :feedback="false"
             toggleMask
-            placeholder="Confirm your password"
+            placeholder="Confirme su contraseña"
             inputClass="w-full"
             class="w-full"
           />
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="role" class="text-sm font-medium">Role</label>
+          <label for="role" class="text-sm font-medium">Rol</label>
           <Select
             id="role"
             v-model="role"
@@ -167,16 +167,16 @@ export default defineComponent({
 
         <Button
           type="submit"
-          label="Sign Up"
+          label="Registrarse"
           :loading="authStore.loading"
           class="w-full"
         />
       </form>
 
       <p class="mt-4 text-center text-sm">
-        Already have an account?
+        ¿Ya tiene una cuenta?
         <router-link to="/login" class="text-primary hover:underline">
-          Login
+          Iniciar Sesión
         </router-link>
       </p>
     </div>

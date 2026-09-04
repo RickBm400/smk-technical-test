@@ -135,7 +135,7 @@ export const useFilesStore = defineStore('files', () => {
         uploadError.value = [{ row: 0, field: 'file', message: error.response.data.error }]
         return { success: false, errors: [{ row: 0, field: 'file', message: error.response.data.error }] }
       }
-      return { success: false, errors: [{ row: 0, field: 'file', message: 'Upload failed' }] }
+      return { success: false, errors: [{ row: 0, field: 'file', message: 'Carga fallida' }] }
     } finally {
       loading.value = false
       uploadProgress.value = 0
@@ -150,7 +150,7 @@ export const useFilesStore = defineStore('files', () => {
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.error || 'Delete failed'
+        message: error.response?.data?.error || 'Eliminación fallida'
       }
     }
   }

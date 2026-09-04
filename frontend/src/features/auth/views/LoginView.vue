@@ -34,17 +34,17 @@ export default defineComponent({
       successMessage.value = ''
 
       if (!email.value) {
-        errorMessage.value = 'Email is required'
+        errorMessage.value = 'El email es requerido'
         return
       }
 
       if (!validateEmail(email.value)) {
-        errorMessage.value = 'Invalid email format'
+        errorMessage.value = 'Formato de email inválido'
         return
       }
 
       if (!password.value) {
-        errorMessage.value = 'Password is required'
+        errorMessage.value = 'La contraseña es requerida'
         return
       }
 
@@ -54,12 +54,12 @@ export default defineComponent({
       })
 
       if (result.success) {
-        successMessage.value = 'Login successful!'
+        successMessage.value = '¡Inicio de sesión exitoso!'
         setTimeout(() => {
           router.push('/dashboard')
         }, 500)
       } else {
-        errorMessage.value = result.message || 'Login failed'
+        errorMessage.value = result.message || 'Inicio de sesión fallido'
       }
     }
 
@@ -78,7 +78,7 @@ export default defineComponent({
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
-      <h1 class="text-2xl font-bold mb-6 text-center">CSV Manager - Login</h1>
+      <h1 class="text-2xl font-bold mb-6 text-center">CSV Manager - Iniciar Sesión</h1>
 
       <Message v-if="errorMessage" severity="error" class="mb-4">
         {{ errorMessage }}
@@ -95,19 +95,19 @@ export default defineComponent({
             id="email"
             v-model="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Ingrese su email"
             class="w-full"
           />
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="password" class="text-sm font-medium">Password</label>
+          <label for="password" class="text-sm font-medium">Contraseña</label>
           <Password
             id="password"
             v-model="password"
             :feedback="false"
             toggleMask
-            placeholder="Enter your password"
+            placeholder="Ingrese su contraseña"
             inputClass="w-full"
             class="w-full"
           />
@@ -115,16 +115,16 @@ export default defineComponent({
 
         <Button
           type="submit"
-          label="Login"
+          label="Iniciar Sesión"
           :loading="authStore.loading"
           class="w-full"
         />
       </form>
 
       <p class="mt-4 text-center text-sm">
-        Don't have an account?
+        ¿No tiene una cuenta?
         <router-link to="/signup" class="text-primary hover:underline">
-          Sign up
+          Regístrese
         </router-link>
       </p>
     </div>

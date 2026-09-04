@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.error || 'Login failed'
+        message: error.response?.data?.error || 'Inicio de sesión fallido'
       }
     } finally {
       loading.value = false
@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.error || 'Registration failed'
+        message: error.response?.data?.error || 'Registro fallido'
       }
     } finally {
       loading.value = false

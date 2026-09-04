@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import api from '@/services/api'
 import type { AxiosProgressEvent } from 'axios'
 
@@ -9,9 +9,7 @@ export interface UploadedFile {
   size: number
   uploadedBy: string
   createdAt: string
-  _count?: {
-    documents: number
-  }
+  documentCount?: number
 }
 
 export interface UploadResponse {
@@ -31,6 +29,18 @@ export interface UploadErrorResponse {
   errors: CsvError[]
 }
 
+export interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+export interface FilesResponse {
+  data: UploadedFile[]
+  pagination: PaginationInfo
+}
+
 export const useFilesStore = defineStore('files', () => {
   const files = ref<UploadedFile[]>([])
   const loading = ref(false)
@@ -38,16 +48,51 @@ export const useFilesStore = defineStore('files', () => {
   const uploadError = ref<CsvError[] | null>(null)
   const uploadSuccess = ref(false)
 
+  const pagination = ref<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  })
+  const searchQuery = ref('')
+  let debounceTimeout: ReturnType<typeof setTimeout> | null = null
+
+  watch(searchQuery, () => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
+    }
+    debounceTimeout = setTimeout(async () => {
+      pagination.value.page = 1
+      await fetchFiles()
+    }, 700)
+  })
+
   const fetchFiles = async () => {
     loading.value = true
     try {
-      const { data } = await api.get<UploadedFile[]>('/files')
-      files.value = data
+      const { data } = await api.get<FilesResponse>('/files', {
+        params: {
+          page: pagination.value.page,
+          limit: pagination.value.limit,
+          search: searchQuery.value
+        }
+      })
+      files.value = data.data
+      pagination.value = data.pagination
     } catch (error) {
       console.error('Failed to fetch files:', error)
     } finally {
       loading.value = false
     }
+  }
+
+  const setPage = (page: number) => {
+    pagination.value.page = page
+    fetchFiles()
+  }
+
+  const setSearch = (query: string) => {
+    searchQuery.value = query
   }
 
   const uploadFile = async (file: File) => {
@@ -86,6 +131,10 @@ export const useFilesStore = defineStore('files', () => {
         uploadError.value = error.response.data.errors
         return { success: false, errors: error.response.data.errors }
       }
+      if (error.response?.data?.error) {
+        uploadError.value = [{ row: 0, field: 'file', message: error.response.data.error }]
+        return { success: false, errors: [{ row: 0, field: 'file', message: error.response.data.error }] }
+      }
       return { success: false, errors: [{ row: 0, field: 'file', message: 'Upload failed' }] }
     } finally {
       loading.value = false
@@ -117,7 +166,11 @@ export const useFilesStore = defineStore('files', () => {
     uploadProgress,
     uploadError,
     uploadSuccess,
+    pagination,
+    searchQuery,
     fetchFiles,
+    setPage,
+    setSearch,
     uploadFile,
     deleteFile,
     clearUploadState

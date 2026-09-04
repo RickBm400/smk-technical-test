@@ -21,3 +21,9 @@ Implement unit testing over login and sign up features
 # Task-5: Logout
 
 Users must be able to logout from the dashboard when logout button is clicked.
+
+# Task-6: Paginated dashboard ✓
+
+Add a pagination function for csv files list, leave a minimun of 10 regists, add search bar for filter regists unsig debouncing
+
+**Status:** Completed ✓

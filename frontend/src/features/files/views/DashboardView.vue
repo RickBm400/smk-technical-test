@@ -6,6 +6,8 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
+import InputText from 'primevue/inputtext'
+import Paginator from 'primevue/paginator'
 import { useAuthStore } from '@/features/auth/stores/auth'
 import { useFilesStore } from '@/features/files/stores/files'
 
@@ -16,7 +18,9 @@ export default defineComponent({
     DataTable,
     Column,
     Message,
-    ProgressBar
+    ProgressBar,
+    InputText,
+    Paginator
   },
   setup() {
     const router = useRouter()
@@ -93,6 +97,14 @@ export default defineComponent({
       filesStore.clearUploadState()
     }
 
+    const onPageChange = (event: { page: number }) => {
+      filesStore.setPage(event.page + 1)
+    }
+
+    const onSearch = () => {
+      filesStore.fetchFiles()
+    }
+
     onMounted(async () => {
       await authStore.fetchUser()
       await filesStore.fetchFiles()
@@ -111,6 +123,8 @@ export default defineComponent({
       formatDate,
       formatSize,
       clearErrors,
+      onPageChange,
+      onSearch,
       isAdmin: authStore.user?.role === 'ADMIN'
     }
   }
@@ -206,7 +220,23 @@ export default defineComponent({
       </div>
 
       <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-semibold mb-4">Your CSV Files</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold">Your CSV Files</h2>
+          <div class="flex gap-2">
+            <span class="p-input-icon-left">
+              <InputText
+                v-model="filesStore.searchQuery"
+                placeholder="Search by name or user..."
+                @keyup.enter="onSearch"
+              />
+            </span>
+            <Button
+              label="Search"
+              severity="secondary"
+              @click="onSearch"
+            />
+          </div>
+        </div>
 
         <DataTable
           :value="filesStore.files"
@@ -220,14 +250,10 @@ export default defineComponent({
               {{ formatSize(data.size) }}
             </template>
           </Column>
-          <Column field="uploadedBy" header="Uploaded By" sortable >
-            <template #body="{ data }">
-              {{ data?.user?.email || 'N/A' }}
-            </template>
-          </Column>
+          <Column field="uploadedBy" header="Uploaded By" sortable />
           <Column header="Documents">
             <template #body="{ data }">
-              {{ data._count?.documents || 0 }}
+              {{ data.documentCount || 0 }}
             </template>
           </Column>
           <Column field="createdAt" header="Upload Date" sortable>
@@ -238,7 +264,23 @@ export default defineComponent({
         </DataTable>
 
         <div v-if="!filesStore.loading && filesStore.files.length === 0" class="text-center py-8">
-          <p class="text-gray-500">No files uploaded yet.</p>
+          <p class="text-gray-500">No files found.</p>
+        </div>
+
+        <Paginator
+          v-if="filesStore.pagination.totalPages > 1"
+          :rows="filesStore.pagination.limit"
+          :totalRecords="filesStore.pagination.total"
+          :first="(filesStore.pagination.page - 1) * filesStore.pagination.limit"
+          @page="onPageChange"
+          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+          class="mt-4"
+        />
+
+        <div v-if="filesStore.pagination.total > 0" class="text-sm text-gray-500 text-center mt-2">
+          Showing {{ (filesStore.pagination.page - 1) * filesStore.pagination.limit + 1 }} to
+          {{ Math.min(filesStore.pagination.page * filesStore.pagination.limit, filesStore.pagination.total) }}
+          of {{ filesStore.pagination.total }} entries
         </div>
       </div>
     </div>

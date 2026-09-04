@@ -16,20 +16,58 @@ filesRouter.use(authMiddleware)
 
 filesRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const files = await prisma.file.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { documents: true }
-        },
-        user: {
-          select: {
-            email: true
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+    const search = (req.query.search as string) || ''
+    const skip = (page - 1) * limit
+
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { user: { email: { contains: search, mode: 'insensitive' as const } } }
+          ]
+        }
+      : {}
+
+    const [files, total] = await Promise.all([
+      prisma.file.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: { documents: true }
+          },
+          user: {
+            select: {
+              email: true
+            }
           }
         }
+      }),
+      prisma.file.count({ where })
+    ])
+
+    const totalPages = Math.ceil(total / limit)
+
+    res.json({
+      data: files.map(file => ({
+        id: file.id,
+        name: file.name,
+        size: file.size,
+        uploadedBy: file.user.email,
+        createdAt: file.createdAt,
+        documentCount: file._count.documents
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
       }
     })
-    res.json(files)
   } catch (error) {
     next(error)
   }

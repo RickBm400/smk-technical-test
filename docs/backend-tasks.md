@@ -50,3 +50,9 @@ Apply requireAdmin middleware to DELETE /api/files/:id endpoint so only admins c
 Create error-messages.ts file with all error messages centralized and update backend files to use these constants instead of literal strings.
 
 **Status:** Completed ✓
+
+# Task-8: Paginated dashboard ✓
+
+for /files endpoint, implement a paginated mechanism in order to reduce response load, add the functionality of search regist by file name or user id
+
+**Status:** Completed ✓

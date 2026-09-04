@@ -134,6 +134,7 @@ export class FilesService {
       const newFile = await tx.file.create({
         data: {
           name: originalName,
+          path: `uploads/${originalName}`,
           size,
           userId
         },
